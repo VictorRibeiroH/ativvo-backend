@@ -71,6 +71,11 @@ func main() {
 	protected.Get("/me", handlers.Me)
 	protected.Put("/profile", handlers.UpdateProfile)
 
+	protected.Get("/workouts/weekly", handlers.GetWeeklyWorkouts)
+	protected.Post("/workouts/weekly", handlers.SaveWeeklyWorkouts)
+	protected.Patch("/workouts/weekly/:id/toggle", handlers.ToggleWorkoutComplete)
+	protected.Get("/workouts/weekly/stats", handlers.GetWeeklyStats)
+
 	go func() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)

@@ -37,9 +37,15 @@ func AuthRequired(c *fiber.Ctx) error {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID := claims["user_id"].(string)
-		c.Locals("userID", userID)
-		return c.Next()
+		// Safely extract user_id from claims. guard against nil or unexpected types to
+		// avoid interface{} conversion panics.
+		if uidRaw, exists := claims["user_id"]; exists {
+			if userID, ok := uidRaw.(string); ok && userID != "" {
+				// use the key "user_id" so handlers can read the same name
+				c.Locals("user_id", userID)
+				return c.Next()
+			}
+		}
 	}
 
 	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
