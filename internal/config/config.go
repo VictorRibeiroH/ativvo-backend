@@ -33,7 +33,7 @@ func Load() error {
 		JWTSecret:       getEnv("JWT_SECRET", ""),
 		Port:            getEnv("PORT", "8080"),
 		Environment:     getEnv("ENV", "development"),
-		FrontendURL:     getEnv("FRONTEND_URL", "http://localhost:3000"),
+		FrontendURL:     getEnv("FRONTEND_URL", ""),
 	}
 
 	if config.DatabaseURL == "" {
@@ -44,6 +44,9 @@ func Load() error {
 	}
 	if len(config.JWTSecret) < 32 {
 		return fmt.Errorf("JWT_SECRET must be at least 32 characters")
+	}
+	if config.FrontendURL == "" {
+		return fmt.Errorf("FRONTEND_URL is required")
 	}
 
 	AppConfig = config

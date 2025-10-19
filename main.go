@@ -44,6 +44,8 @@ func main() {
 		allowedOrigins[i] = strings.TrimSpace(origin)
 	}
 
+	log.Printf("🌐 CORS enabled for origins: %s", strings.Join(allowedOrigins, ", "))
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     strings.Join(allowedOrigins, ","),
 		AllowMethods:     "GET,POST,PUT,DELETE,PATCH,OPTIONS",
