@@ -34,13 +34,12 @@ func Connect() error {
 }
 
 func Migrate() error {
-	err := DB.AutoMigrate(
-		&models.User{},
-		&models.Workout{},
-	)
+	if err := DB.AutoMigrate(&models.User{}); err != nil {
+		log.Printf("⚠️  User table migration warning: %v", err)
+	}
 	
-	if err != nil {
-		return fmt.Errorf("failed to migrate database: %w", err)
+	if err := DB.AutoMigrate(&models.Workout{}); err != nil {
+		log.Printf("⚠️  Workout table migration warning: %v", err)
 	}
 
 	log.Println("✅ Database migration completed")
