@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/VictorRibeiroH/ativvo-backend/internal/config"
@@ -35,11 +36,16 @@ func main() {
 		ErrorHandler: customErrorHandler,
 	})
 
-	app.Use(recover.New()) 
-	app.Use(logger.New())  // Logs de requests
+	app.Use(recover.New())
+	app.Use(logger.New())
+
+	allowedOrigins := strings.Split(config.AppConfig.FrontendURL, ",")
+	for i, origin := range allowedOrigins {
+		allowedOrigins[i] = strings.TrimSpace(origin)
+	}
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     config.AppConfig.FrontendURL,
+		AllowOrigins:     strings.Join(allowedOrigins, ","),
 		AllowMethods:     "GET,POST,PUT,DELETE,PATCH,OPTIONS",
 		AllowHeaders:     "Origin,Content-Type,Accept,Authorization",
 		AllowCredentials: true,

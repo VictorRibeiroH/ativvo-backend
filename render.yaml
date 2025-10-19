@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: ativvo-backend
+    runtime: go
+    buildCommand: go build -tags netgo -ldflags '-s -w' -o app
+    startCommand: ./app
