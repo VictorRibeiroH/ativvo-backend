@@ -76,6 +76,13 @@ func main() {
 	protected.Patch("/workouts/weekly/:id/toggle", handlers.ToggleWorkoutComplete)
 	protected.Get("/workouts/weekly/stats", handlers.GetWeeklyStats)
 
+	// Event routes
+	protected.Post("/events", handlers.CreateEvent)
+	protected.Get("/events", handlers.GetEvents)
+	protected.Get("/events/by-date", handlers.GetEventsByDate)
+	protected.Put("/events/:id", handlers.UpdateEvent)
+	protected.Delete("/events/:id", handlers.DeleteEvent)
+
 	go func() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)

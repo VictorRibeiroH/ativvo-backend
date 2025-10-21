@@ -46,6 +46,10 @@ func Migrate() error {
 		log.Printf("⚠️  WeeklyWorkout table migration warning: %v", err)
 	}
 
+	if err := DB.AutoMigrate(&models.Event{}); err != nil {
+		log.Printf("⚠️  Event table migration warning: %v", err)
+	}
+
 	log.Println("✅ Database migration completed")
 	return nil
 }

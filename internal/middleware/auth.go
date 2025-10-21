@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"strings"
 
 	"github.com/VictorRibeiroH/ativvo-backend/internal/config"
@@ -43,9 +44,11 @@ func AuthRequired(c *fiber.Ctx) error {
 			if userID, ok := uidRaw.(string); ok && userID != "" {
 				// use the key "user_id" so handlers can read the same name
 				c.Locals("user_id", userID)
+				log.Printf("✅ Auth successful for user: %s", userID)
 				return c.Next()
 			}
 		}
+		log.Printf("⚠️  Token claims missing or invalid user_id: %+v", claims)
 	}
 
 	return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
