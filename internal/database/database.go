@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/VictorRibeiroH/ativvo-backend/internal/config"
 	"github.com/VictorRibeiroH/ativvo-backend/internal/models"
@@ -21,37 +20,38 @@ func Connect() error {
 		logLevel = logger.Info
 	}
 
-	DB, err = gorm.Open(postgres.Open(config.AppConfig.DatabaseURL), &gorm.Config{
-		Logger: logger.Default.LogMode(logLevel),
+	dsn := config.AppConfig.DatabaseURL
+
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger:      logger.Default.LogMode(logLevel),
+		PrepareStmt: false, // Desabilita prepared statements para evitar duplicação
 	})
 	
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	log.Println("✅ Connected to PostgreSQL (Supabase)")
+	// Limpar prepared statements antigos
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get database instance: %w", err)
+	}
+
+	_, err = sqlDB.Exec("DEALLOCATE ALL")
+	if err != nil {
+		return fmt.Errorf("could not deallocate prepared statements: %w", err)
+	}
+
 	return nil
 }
 
 func Migrate() error {
-	if err := DB.AutoMigrate(&models.User{}); err != nil {
-		log.Printf("⚠️  User table migration warning: %v", err)
-	}
-	
-	if err := DB.AutoMigrate(&models.Workout{}); err != nil {
-		log.Printf("⚠️  Workout table migration warning: %v", err)
-	}
-
-	if err := DB.AutoMigrate(&models.WeeklyWorkout{}); err != nil {
-		log.Printf("⚠️  WeeklyWorkout table migration warning: %v", err)
-	}
-
-	if err := DB.AutoMigrate(&models.Event{}); err != nil {
-		log.Printf("⚠️  Event table migration warning: %v", err)
-	}
-
-	log.Println("✅ Database migration completed")
-	return nil
+	return DB.AutoMigrate(
+		&models.User{},
+		&models.Workout{},
+		&models.WeeklyWorkout{},
+		&models.Event{},
+	)
 }
 
 func Close() error {
@@ -61,3 +61,5 @@ func Close() error {
 	}
 	return sqlDB.Close()
 }
+
+

@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"log"
 	"time"
 
 	"github.com/VictorRibeiroH/ativvo-backend/internal/database"
 	"github.com/VictorRibeiroH/ativvo-backend/internal/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type CreateEventInput struct {
@@ -19,15 +19,8 @@ type CreateEventInput struct {
 
 // CreateEvent cria um novo evento para o usuário autenticado
 func CreateEvent(c *fiber.Ctx) error {
-	log.Printf("🎯 CreateEvent called")
-	
-	// Pegar usuário do middleware
-	userIDRaw := c.Locals("user_id")
-	log.Printf("📝 user_id from Locals: %v (type: %T)", userIDRaw, userIDRaw)
-	
-	userIDStr, ok := userIDRaw.(string)
+	userIDStr, ok := c.Locals("user_id").(string)
 	if !ok {
-		log.Printf("❌ user_id type assertion failed")
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Invalid user ID",
 		})
@@ -35,13 +28,10 @@ func CreateEvent(c *fiber.Ctx) error {
 
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
-		log.Printf("❌ Failed to parse user_id: %v", err)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Invalid user ID format",
 		})
 	}
-	
-	log.Printf("✅ User ID parsed: %s", userID)
 
 	var input CreateEventInput
 	if err := c.BodyParser(&input); err != nil {
@@ -141,7 +131,12 @@ func GetEventsByDate(c *fiber.Ctx) error {
 	}
 
 	var events []models.Event
-	if err := database.DB.Where("user_id = ? AND DATE(event_date) = ?", userID, eventDate.Format("2006-01-02")).
+	
+	startOfDay := time.Date(eventDate.Year(), eventDate.Month(), eventDate.Day(), 0, 0, 0, 0, time.UTC)
+	endOfDay := startOfDay.Add(24 * time.Hour)
+	
+	if err := database.DB.Session(&gorm.Session{PrepareStmt: false}).
+		Where("user_id = ? AND event_date >= ? AND event_date < ?", userID, startOfDay, endOfDay).
 		Order("event_time ASC").
 		Find(&events).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
