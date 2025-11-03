@@ -83,6 +83,30 @@ func main() {
 	protected.Put("/events/:id", handlers.UpdateEvent)
 	protected.Delete("/events/:id", handlers.DeleteEvent)
 
+	// Food routes (public foods shared by all users)
+	protected.Post("/foods", handlers.CreateFood)
+	protected.Get("/foods", handlers.GetFoods)
+	protected.Get("/foods/:id", handlers.GetFood)
+	protected.Put("/foods/:id", handlers.UpdateFood)
+	protected.Delete("/foods/:id", handlers.DeleteFood)
+	
+	protected.Get("/foods/taco/search", handlers.SearchTACOFoods)
+	protected.Post("/foods/taco/import", handlers.ImportTACOFood)
+
+	// Diet plan routes
+	protected.Post("/diet/calculate", handlers.CalculateDietPlan)
+	protected.Post("/diet/plans", handlers.CreateDietPlan)
+	protected.Get("/diet/plans/active", handlers.GetActiveDietPlan)
+	protected.Get("/diet/plans", handlers.GetDietPlans)
+	
+	// Meal routes
+	protected.Post("/diet/plans/:dietPlanId/meals", handlers.CreateMeal)
+	protected.Delete("/diet/meals/:mealId", handlers.DeleteMeal)
+	
+	// Meal food routes
+	protected.Post("/diet/meals/:mealId/foods", handlers.AddFoodToMeal)
+	protected.Delete("/diet/meal-foods/:mealFoodId", handlers.RemoveFoodFromMeal)
+
 	go func() {
 		sigChan := make(chan os.Signal, 1)
 		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)

@@ -51,6 +51,10 @@ func Migrate() error {
 		&models.Workout{},
 		&models.WeeklyWorkout{},
 		&models.Event{},
+		&models.Food{},
+		&models.DietPlan{},
+		&models.Meal{},
+		&models.MealFood{},
 	)
 }
 

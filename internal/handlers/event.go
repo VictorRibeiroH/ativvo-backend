@@ -132,9 +132,11 @@ func GetEventsByDate(c *fiber.Ctx) error {
 
 	var events []models.Event
 	
-	startOfDay := time.Date(eventDate.Year(), eventDate.Month(), eventDate.Day(), 0, 0, 0, 0, time.UTC)
+	// Calcular o início e fim do dia para buscar todos os eventos da data
+	startOfDay := time.Date(eventDate.Year(), eventDate.Month(), eventDate.Day(), 0, 0, 0, 0, eventDate.Location())
 	endOfDay := startOfDay.Add(24 * time.Hour)
 	
+	// Buscar eventos entre o início e fim do dia
 	if err := database.DB.Session(&gorm.Session{PrepareStmt: false}).
 		Where("user_id = ? AND event_date >= ? AND event_date < ?", userID, startOfDay, endOfDay).
 		Order("event_time ASC").
@@ -142,6 +144,11 @@ func GetEventsByDate(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch events",
 		})
+	}
+
+	// Retornar array vazio se não houver eventos (não é erro)
+	if events == nil {
+		events = []models.Event{}
 	}
 
 	return c.JSON(events)

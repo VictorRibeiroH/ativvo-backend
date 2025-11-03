@@ -112,7 +112,7 @@ func Login(c *fiber.Ctx) error {
 }
 
 func Me(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(string)
+	userID := c.Locals("user_id").(string)
 
 	var user models.User
 	if err := database.DB.First(&user, "id = ?", userID).Error; err != nil {
@@ -127,7 +127,7 @@ func Me(c *fiber.Ctx) error {
 }
 
 func UpdateProfile(c *fiber.Ctx) error {
-	userID := c.Locals("userID").(string)
+	userID := c.Locals("user_id").(string)
 
 	var input models.UpdateProfileInput
 	if err := c.BodyParser(&input); err != nil {

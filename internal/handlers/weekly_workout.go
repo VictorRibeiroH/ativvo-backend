@@ -7,6 +7,7 @@ import (
 	"github.com/VictorRibeiroH/ativvo-backend/internal/database"
 	"github.com/VictorRibeiroH/ativvo-backend/internal/models"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 type WeeklyWorkoutInput struct {
@@ -106,21 +107,21 @@ func GetWeeklyStats(c *fiber.Ctx) error {
 	now := time.Now()
 	weekStart := getWeekStart(now)
 
-	var user models.User
-	if err := database.DB.Where("id = ?", userID).First(&user).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"error": "User not found",
-		})
-	}
-
+	// Buscar workouts completados
 	var completedCount int64
-	database.DB.Model(&models.WeeklyWorkout{}).
+	database.DB.Session(&gorm.Session{PrepareStmt: false}).
+		Model(&models.WeeklyWorkout{}).
 		Where("user_id = ? AND week_start = ? AND completed = ? AND is_rest = ?", userID, weekStart, true, false).
 		Count(&completedCount)
 
-	goal := user.WeeklyWorkouts
-	if goal == 0 {
-		goal = 3
+	// Buscar meta do usuário
+	var user models.User
+	goal := 3 // meta padrão
+	if err := database.DB.Session(&gorm.Session{PrepareStmt: false}).
+		Select("weekly_workouts").Where("id = ?", userID).First(&user).Error; err == nil {
+		if user.WeeklyWorkouts > 0 {
+			goal = user.WeeklyWorkouts
+		}
 	}
 
 	emoji := getMotivationEmoji(int(completedCount), goal)
